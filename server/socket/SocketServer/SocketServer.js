@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const { db } = require("../../config/firebaseConfig");
 const RoomChat = require("../roomChat")
+const roomRecover = require('../roomRecover')
 
 module.exports = (server) => {
   const io = new Server(server, {
@@ -10,6 +11,12 @@ module.exports = (server) => {
     }
   });
   
+    // Namespace for room management
+    const roomNamespace = io.of("/rooms");
+  
+    roomNamespace.on("connection", async (socket) => {
+      roomRecover(socket, roomNamespace, db);
+    });
   
 
   // Namespace for chat functionality
