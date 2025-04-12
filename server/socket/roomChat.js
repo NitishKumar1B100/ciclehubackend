@@ -66,7 +66,7 @@ module.exports = (socket, chatNamespace, db) =>{
         });
 
         chatNamespace.to(oldRoomId).emit("user_left", {
-          message: `${oldDetails.name} has left the chat.`,
+          message: oldDetails.name,
           users: updatedUsers
         });
 
@@ -142,7 +142,7 @@ module.exports = (socket, chatNamespace, db) =>{
     await db.collection("activeSockets").doc(socket.id).delete(); // cleanup
   
     chatNamespace.to(roomId).emit("user_left", {
-      message: `${userDetails} has left the chat.`,
+      message: userDetails.name,
       users: updatedUsers
     });
   });
