@@ -14,7 +14,6 @@ module.exports = (socket, chatNamespace, db) =>{
     if (!roomSnapshot.exists) return;
   
     const roomData = roomSnapshot.data();
-    const roomDetails = roomData.room || {};
     const currentTime = Math.floor(Date.now() / 1000);
   
     let { token, privilegeExpireTime, channelName } = roomData;
