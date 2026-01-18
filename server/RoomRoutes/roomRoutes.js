@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const admin = require("firebase-admin");
 const express = require("express");
 const { db } = require("../config/firebaseConfig");
 const router = express.Router();
@@ -13,9 +14,9 @@ const AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE;
 // API to create a new room
 router.post("/create", async (req, res) => {
   try {
-    const roomRef = db.collection("rooms").doc();
+    const roomRef = db.collection("rooms").doc(); // Generate ID but don’t create yet
     const channelName = roomRef.id;
-
+    
     const token = RtcTokenBuilder.buildTokenWithUid(
       AGORA_APP_ID,
       AGORA_APP_CERTIFICATE,
@@ -24,20 +25,20 @@ router.post("/create", async (req, res) => {
       RtcRole.PUBLISHER,
       Math.floor(Date.now() / 1000) + 3600
     );
-
+    
     const newRoom = {
       ...req.body,
       channelName,
       token,
-      createdAt: admin.firestore.Timestamp.now(),
+      createdAt: new Date().toISOString(),
       expiresAt: admin.firestore.Timestamp.fromMillis(
-        Date.now() + 10 * 1000 // 10 seconds
+        Date.now() + 10 * 1000 
       )
     };
-
+    
     await roomRef.set(newRoom);
     res.status(200).json({ id: roomRef.id, ...newRoom });
-
+    
   } catch (error) {
     res.status(500).json({ error: "Failed to create room." });
   }
