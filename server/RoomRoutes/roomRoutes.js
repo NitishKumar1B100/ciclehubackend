@@ -13,9 +13,9 @@ const AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE;
 // API to create a new room
 router.post("/create", async (req, res) => {
   try {
-    const roomRef = db.collection("rooms").doc(); // Generate ID but don’t create yet
+    const roomRef = db.collection("rooms").doc();
     const channelName = roomRef.id;
-    
+
     const token = RtcTokenBuilder.buildTokenWithUid(
       AGORA_APP_ID,
       AGORA_APP_CERTIFICATE,
@@ -24,21 +24,25 @@ router.post("/create", async (req, res) => {
       RtcRole.PUBLISHER,
       Math.floor(Date.now() / 1000) + 3600
     );
-    
+
     const newRoom = {
       ...req.body,
       channelName,
       token,
-      createdAt: new Date().toISOString()
+      createdAt: admin.firestore.Timestamp.now(),
+      expiresAt: admin.firestore.Timestamp.fromMillis(
+        Date.now() + 10 * 1000 // 10 seconds
+      )
     };
-    
+
     await roomRef.set(newRoom);
     res.status(200).json({ id: roomRef.id, ...newRoom });
-    
+
   } catch (error) {
     res.status(500).json({ error: "Failed to create room." });
   }
 });
+
 
 // API to check if a room exists
 router.get("/:id", async (req, res) => {
