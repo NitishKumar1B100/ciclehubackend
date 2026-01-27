@@ -60,4 +60,36 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// room Delete API with owner verification
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { uid } = req.body;
+
+    if (!uid) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const roomRef = db.collection("rooms").doc(id);
+    const roomSnap = await roomRef.get();
+
+    if (!roomSnap.exists) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    const roomData = roomSnap.data();
+
+    if (roomData.room.owner !== uid) {
+      return res.status(403).json({ error: "Not room owner" });
+    }
+
+    await roomRef.delete();
+    res.status(200).json({ success: true });
+
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete room" });
+  }
+});
+
+
 module.exports = router;
